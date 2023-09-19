@@ -34,8 +34,8 @@ class Employee(models.Model):
                 raise ValidationError(f"This {device.d_name} don't belong to {self.company.name} company")
 
     def save(self, *args, **kwargs):
-        self.clean()
         super(Employee, self).save(*args, **kwargs)
+        self.clean() 
 
     def __str__(self):
         return self.name

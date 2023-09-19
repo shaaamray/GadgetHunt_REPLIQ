@@ -1,8 +1,8 @@
-from django.http import JsonResponse
 from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework import viewsets, status
+from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.decorators import api_view, permission_classes, action
 
@@ -27,7 +27,7 @@ def signupView(request):
 
     user = User.objects.create_user(username=username, password=password)
     Company.objects.create(name=c_name, email=c_email, owner=user)
-    return JsonResponse({'status': 'Successfully registered.'})
+    return Response({'SignUP is Successful'}, status=status.HTTP_201_CREATED)
 
 #login
 @api_view(['POST'])
@@ -57,8 +57,46 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     serializer_class = EmployeeSerializer
 
     def create(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
+        try:
+            company = Company.objects.get(owner=request.user)
+        except Company.DoesNotExist:
+            return Response({"detail": "You don't own a company."}, status=status.HTTP_400_BAD_REQUEST)
+
+        data = {
+            'name': request.data.get('name'),
+            'position': request.data.get('position'),
+            'devices': request.data.get('devices', []),
+            'company': company.id  # logged-in user ID
+        }
+
+        serializer = self.serializer_class(data=data)
         if serializer.is_valid():
             serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class DeviceViewSet(viewsets.ModelViewSet):
+    queryset = Device.objects.all()
+    serializer_class = DeviceSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        try:
+            company = Company.objects.get(owner = request.user)
+        except Company.DoesNotExist:
+            return Response({'detail':'No access to company'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        data = {
+            'd_name' : request.data.get('d_name'),
+            'type' : request.data.get('type'),
+            'description' : request.data.get('description')
+        }
+
+        serializer = self.serializer_class(data=data)
+
+        if serializer.is_valid():
+            device = serializer.save()
+            company.devices.add(device)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
