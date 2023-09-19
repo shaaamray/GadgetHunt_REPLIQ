@@ -11,6 +11,7 @@ from gadgetHunt.gadgetHuntApp import views
 router = DefaultRouter()
 # router.register(r"company", views.CompanyViewSet)
 router.register(r'employees', views.EmployeeViewSet)
+router.register(r'device', views.DeviceViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

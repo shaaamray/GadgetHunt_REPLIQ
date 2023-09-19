@@ -18,7 +18,7 @@ class CompanyAdmin(admin.ModelAdmin):
 admin.site.register(Company, CompanyAdmin)
 
 class EmployeeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'position')
+    list_display = ('id', 'name', 'position', 'company')
 
 admin.site.register(Employee, EmployeeAdmin)
 
