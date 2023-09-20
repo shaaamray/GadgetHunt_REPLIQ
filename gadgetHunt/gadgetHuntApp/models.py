@@ -28,7 +28,7 @@ class Employee(models.Model):
     devices = models.ManyToManyField('Device', related_name='holders')
 
     def clean(self):
-        # This method is called before the save method and is used for validation
+        
         for device in self.devices.all():
             if device.company != self.company:
                 raise ValidationError(f"This {device.d_name} don't belong to {self.company.name} company")
@@ -50,6 +50,7 @@ class Device(models.Model):
     ]
     type = models.CharField(max_length=100, choices=DEVICE_TYPE_CHOICES)
     description = models.TextField(blank=True)
+    current_holder = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, blank=True, related_name="assigned_devices")
 
     def __str__(self):
         return self.d_name
@@ -71,7 +72,7 @@ class CheckOut(models.Model):
     
 class DeviceLog(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="device_logs")
-    device = models.ForeignKey(Device, on_delete=models.CASCADE)
+    device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name="dev_logInfo")
     check_out = models.ForeignKey(CheckOut, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now_add=True)
     CONDITION_CHOICES = [

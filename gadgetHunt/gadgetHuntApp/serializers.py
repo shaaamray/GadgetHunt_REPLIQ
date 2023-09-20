@@ -48,6 +48,14 @@ class CheckOutSerializer(serializers.ModelSerializer):
         model = CheckOut
         fields = ['id', 'employee', 'device', 'check_out_date', 'return_date']
 
+class AssignDeviceSerializer(serializers.Serializer):
+    employee_id = serializers.IntegerField(required=True)
+    condition_on_checkout = serializers.ChoiceField(choices=DeviceLog.CONDITION_CHOICES, required=True)
+
+class ReceiveDeviceSerializer(serializers.Serializer):
+    employee_id = serializers.IntegerField(required=True)
+    condition_on_return = serializers.ChoiceField(choices=DeviceLog.CONDITION_CHOICES, required=True)
+
 CompanySerializer.employees = EmployeeSerializer(many=True, read_only=True)
 CompanySerializer.device_logs = DeviceLogSerializer(many=True, read_only=True, source='device_logs')
 CompanySerializer.checkouts = CheckOutSerializer(many=True, source='checkout_records')
